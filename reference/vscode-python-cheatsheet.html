@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>速查表 · VS Code + Python 跑与调</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="inner">
+  <p class="eyebrow">python-lab · 速查表</p>
+  <h1>VS Code + Python：跑起来、停下来</h1>
+  <p class="subtitle">Windows 键位。打印出来放在手边，比翻课程快。</p>
+</header>
+
+<main>
+
+<h2>1. 每天都会按的键</h2>
+
+<table>
+  <thead><tr><th>按键</th><th>作用</th><th>什么时候用</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>`</kbd></td><td>开关集成终端</td><td>跑脚本、装包、看报错</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>`</kbd></td><td>新开一个终端</td><td>要同时跑两个东西</td></tr>
+    <tr><td><kbd>F5</kbd></td><td>调试运行</td><td>要断点、要看变量</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>F5</kbd></td><td>不调试直接跑</td><td>只想看输出</td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>F5</kbd></td><td>停止调试</td><td>卡在死循环里</td></tr>
+    <tr><td><kbd>F9</kbd></td><td>切换断点</td><td>在当前行下／取消红点</td></tr>
+    <tr><td><kbd>F10</kbd></td><td>单步跳过</td><td>不进函数，往下走一行</td></tr>
+    <tr><td><kbd>F11</kbd></td><td>单步进入</td><td>钻进函数体</td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>F11</kbd></td><td>单步跳出</td><td>这一层看够了</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Y</kbd></td><td>调试控制台</td><td>现场敲表达式、调函数</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd></td><td>命令面板</td><td>一切找不到的功能都从这里进</td></tr>
+  </tbody>
+</table>
+
+<h2>2. 终端里最常用的几条</h2>
+
+<pre><code>python main.py                      # 跑脚本
+python -m pdb main.py               # 命令行调试
+python -m pip install 包名           # 装包（务必先确认提示符带 (.venv)）
+python -m pip list                  # 看装了什么
+python -c "import sys; print(sys.executable)"   # 我现在用的是哪个 Python
+where python                        # 同上，看 PATH 里所有 python
+
+# 虚拟环境（本项目已建好，换项目时才需要）
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1        # PowerShell 激活
+.\.venv\Scripts\python.exe          # 不激活也能直接用它跑
+deactivate                          # 退出环境</code></pre>
+
+<div class="note warn">
+  <span class="label">Windows 上没有 <code>python3</code></span>
+  <p>敲 <code>python3</code> 会跳出去 Microsoft Store 的提示——那个 <code>python3.exe</code> 是商店占位符，不是 Python。在 Windows 上只认 <code>python</code> 和 <code>py</code>。</p>
+</div>
+
+<h2>3. <code>launch.json</code> 里真正重要的字段</h2>
+
+<table>
+  <thead><tr><th>字段</th><th>取值</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td><code>type</code></td><td><code>debugpy</code></td><td>新版调试器（旧配置写 <code>python</code> 也还能用）</td></tr>
+    <tr><td><code>request</code></td><td><code>launch</code> / <code>attach</code></td><td>自己启动程序 / 连上已经在跑的程序</td></tr>
+    <tr><td><code>program</code></td><td><code>${file}</code></td><td>调试当前打开的文件</td></tr>
+    <tr><td><code>module</code></td><td><code>main</code></td><td>按模块跑，等价 <code>python -m main</code></td></tr>
+    <tr><td><code>console</code></td><td><code>integratedTerminal</code></td><td>输入输出走集成终端（推荐，<code>input()</code> 可用）</td></tr>
+    <tr><td></td><td><code>internalConsole</code></td><td>走调试控制台，<b>不支持</b> <code>input()</code></td></tr>
+    <tr><td></td><td><code>externalTerminal</code></td><td>弹独立窗口，适合要看满屏输出</td></tr>
+    <tr><td><code>cwd</code></td><td><code>${workspaceFolder}</code></td><td>工作目录，决定相对路径从哪算</td></tr>
+    <tr><td><code>args</code></td><td><code>["--n", "8"]</code></td><td>命令行参数</td></tr>
+    <tr><td><code>env</code></td><td><code>{"PYTHONUTF8": "1"}</code></td><td>给这次运行加环境变量</td></tr>
+    <tr><td><code>justMyCode</code></td><td><code>false</code></td><td>允许单步进第三方库内部；<code>true</code> 只看自己的代码</td></tr>
+    <tr><td><code>stopOnEntry</code></td><td><code>true</code></td><td>启动就停在第一行</td></tr>
+  </tbody>
+</table>
+
+<h2>4. <code>pdb</code> 命令（纯终端调试）</h2>
+
+<p>进去：<code>python -m pdb main.py</code>。提示符是 <code>(Pdb)</code>，直接敲命令回车。</p>
+
+<table>
+  <thead><tr><th>命令</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><code>l</code> / <code>ll</code></td><td>看当前位置前后代码 / 整个函数</td></tr>
+    <tr><td><code>n</code></td><td>下一行，不进函数（next）</td></tr>
+    <tr><td><code>s</code></td><td>进入函数（step）</td></tr>
+    <tr><td><code>r</code></td><td>跑完当前函数并返回（return）</td></tr>
+    <tr><td><code>c</code></td><td>继续到下一个断点（continue）</td></tr>
+    <tr><td><code>b main.py:16</code></td><td>在第 16 行下断点</td></tr>
+    <tr><td><code>b fib</code></td><td>在函数入口下断点</td></tr>
+    <tr><td><code>b 24, n == 2</code></td><td>条件断点：只有 <code>n == 2</code> 才停</td></tr>
+    <tr><td><code>cl 1</code></td><td>删掉 1 号断点</td></tr>
+    <tr><td><code>p CALLS</code></td><td>打印变量</td></tr>
+    <tr><td><code>pp locals()</code></td><td>打印得更整齐</td></tr>
+    <tr><td><code>w</code></td><td>调用栈（递归时最有用）</td></tr>
+    <tr><td><code>u</code> / <code>d</code></td><td>在栈里上移／下移一层</td></tr>
+    <tr><td><code>q</code></td><td>退出</td></tr>
+  </tbody>
+</table>
+
+<h2>5. 终端启动 + 界面调试（attach）</h2>
+
+<pre><code># 终端 A：程序启动后挂起，等你连上
+python -m debugpy --listen 5678 --wait-for-client main.py
+
+# 终端 B（或直接 VS Code）：连上去
+# F5 → 选 "Python: 附加到 5678 端口"</code></pre>
+
+<p>用途：程序要带一堆参数、要被别的脚本调用、或者你想在它崩掉的那一刻接上去。<code>--wait-for-client</code> 不能省，否则程序在你连上之前就跑完了。</p>
+
+<h2>6. 报错对照</h2>
+
+<table>
+  <thead><tr><th>现象</th><th>原因</th><th>处理</th></tr></thead>
+  <tbody>
+    <tr><td><code>python</code> 不是内部或外部命令</td><td>Python 没进 PATH</td><td>用 <code>py</code>，或重装时勾选 Add to PATH</td></tr>
+    <tr><td><code>python3</code> 提示去 Microsoft Store 安装</td><td>Windows 上的 <code>python3.exe</code> 是商店占位符（0 字节），不是 Python</td><td>改用 <code>python</code> 或 <code>py</code>；<code>python3</code> 是 Linux/macOS 写法</td></tr>
+    <tr><td><code>ModuleNotFoundError</code></td><td>包装到了别的解释器</td><td>看提示符有没有 <code>(.venv)</code>，再 <code>where python</code></td></tr>
+    <tr><td>禁止运行脚本 <code>Activate.ps1</code></td><td>PowerShell 执行策略</td><td><code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></td></tr>
+    <tr><td><code>pip</code> 不是命令</td><td>venv 里没 pip</td><td><code>python -m ensurepip --upgrade</code></td></tr>
+    <tr><td>F5 弹出「选择调试配置」</td><td>没打开 .py，或没有 launch.json</td><td>先打开脚本，F5 会提示自动生成</td></tr>
+    <tr><td>断点是空心灰圈</td><td>解释器不对／扩展没激活</td><td>重选解释器，<code>Developer: Reload Window</code></td></tr>
+    <tr><td>断点跳过去了没停</td><td>那一行没被执行到，或 <code>justMyCode</code> 挡了库代码</td><td>设 <code>justMyCode: false</code>，或把断点挪到确实会走的分支</td></tr>
+    <tr><td>中文乱码</td><td>终端代码页</td><td><code>chcp 65001</code>，或环境变量 <code>PYTHONUTF8=1</code></td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <span class="label">一条铁律</span>
+  <p>任何「装了包却 import 不到」「pip 成功但代码报错」的问题，先跑 <code>python -c "import sys; print(sys.executable)"</code>。九成情况下它指的不是你以为的那个 Python。</p>
+</div>
+
+</main>
+
+<footer class="inner">
+  <p>回到 <a href="../lessons/0001-run-and-break-in-vscode.html">第 1 课</a> · 操作细节见 <a href="../README.md">README</a></p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 课 · 让 Python 在 VS Code 里跑起来，并停在第一个断点上</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="inner">
+  <p class="eyebrow">python-lab · 第 1 课</p>
+  <h1>让 Python 在 VS Code 里跑起来，并停在第一个断点上</h1>
+  <p class="subtitle">这一课只解决一件事：按下 F5，程序停在你指定的那一行，然后你能看清楚那里每个变量的值。</p>
+</header>
+
+<main>
+
+<h2>你手上已经有什么</h2>
+
+<p>这个文件夹已经配好了，不用从头装。你要做的只是<b>在 VS Code 里把它接上</b>。</p>
+
+<table>
+  <thead>
+    <tr><th>东西</th><th>状态</th><th>它管什么</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Python 3.14</td><td>已装</td><td>解释器本体</td></tr>
+    <tr><td>Python 扩展 + debugpy + Pylance</td><td>已装</td><td>语法高亮、跳转、F5 调试</td></tr>
+    <tr><td><code>.venv/</code></td><td>已建，pip 与 debugpy 就位</td><td>这个项目专用的包环境</td></tr>
+    <tr><td><code>.vscode/launch.json</code></td><td>已写</td><td>F5 按下去之后用哪套调试参数</td></tr>
+    <tr><td><code>main.py</code></td><td>已验证能跑</td><td>练手用的递归脚本，断点位置标在注释里</td></tr>
+  </tbody>
+</table>
+
+<h2>第 1 步 · 选解释器</h2>
+
+<p>VS Code 不会自己猜你想用哪个 Python——它必须被明确告知。这是唯一一个你必须亲手点的动作，也是以后每个新项目都要重复一次的动作。</p>
+
+<ol class="steps">
+  <li>用 VS Code 打开 <code>python-lab</code> 文件夹（<kbd>Ctrl</kbd>+<kbd>K</kbd> 再 <kbd>Ctrl</kbd>+<kbd>O</kbd>，或菜单「文件 → 打开文件夹」）。</li>
+  <li>点<b>右下角状态栏</b>上的 Python 版本号；或者按 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> 输入 <code>Python: Select Interpreter</code>（中文界面显示为「Python: 选择解释器」）。</li>
+  <li>选那个路径里带 <code>.venv</code> 的项。</li>
+</ol>
+
+<div class="note ok">
+  <span class="label">选对了的样子</span>
+  <p>状态栏显示类似 <code>Python 3.14.6 ('.venv': venv)</code>，并且打开终端时提示符前面带 <code>(.venv)</code>。</p>
+</div>
+
+<div class="note warn">
+  <span class="label">选错的样子</span>
+  <p>终端里 <code>pip install</code> 明明成功了，代码里还是 <code>ModuleNotFoundError</code>。这不是包装错了，是<b>装到了另一个 Python 里</b>。回到这一步重选。</p>
+</div>
+
+<h2>第 2 步 · 先让它在终端里跑一次</h2>
+
+<p>调试之前先确认「不调试时它是对的」，否则你分不清是代码错还是配置错。</p>
+
+<ol class="steps">
+  <li>按 <kbd>Ctrl</kbd>+<kbd>`</kbd>（数字 1 左边那个键）打开集成终端。</li>
+  <li>输入 <code>python main.py</code> 回车。</li>
+</ol>
+
+<p>末尾应该看到这几行——<code>15</code> 是 <code>fib(5)</code> 真实的调用次数，最后一行的自检说明脚本逻辑是自洽的：</p>
+
+<pre><code>fib(5) = 5
+实际调用次数: 15
+理论调用次数: 15
+自检通过：实际次数 == 公式次数</code></pre>
+
+<p>看到「不是内部或外部命令」或者版本号不对，说明第 1 步没生效；看到乱码，是终端代码页的问题，跟代码无关。</p>
+
+<h2>第 3 步 · 让它停住</h2>
+
+<p>这是本课的正题。跑通只是「知道结果」，断点才是「知道过程」。</p>
+
+<ol class="steps">
+  <li>打开 <code>main.py</code>，在行号左边点一下，出现<b>红点</b>。在 <code>CALLS += 1</code>（第 16 行）和 <code>result = fib(...)</code>（第 24 行）各下一个。</li>
+  <li>按 <kbd>F5</kbd>。顶部弹出下拉框时选 <code>Python: 当前文件（终端）</code>。</li>
+  <li>程序停在红点那一行，<b>那一行还没执行</b>——这是理解调试器最重要的一点。</li>
+  <li>看左侧面板：<b>变量</b>里是此刻的 <code>n</code>、<code>depth</code>、<code>CALLS</code>；<b>调用堆栈</b>里是已经压进去的几层 <code>fib</code>。</li>
+  <li>按 <kbd>F11</kbd> 走进函数，按 <kbd>F10</kbd> 跳过一行，按 <kbd>Shift</kbd>+<kbd>F11</kbd> 退回上一层，按 <kbd>F5</kbd> 直接跳到下一个断点。</li>
+</ol>
+
+<div class="note">
+  <span class="label">为什么第 16 行值得停</span>
+  <p><code>CALLS += 1</code> 是这个脚本里唯一被修改的全局状态。停在这里，每按一次 <kbd>F5</kbd>，你就能看着它 1、2、3 地涨上去——「递归调用了几次」这件事从公式变成了你亲眼见过的东西。</p>
+</div>
+
+<h2>自检</h2>
+
+<p>先别翻上面的内容，凭记忆回答。想不起来再展开。</p>
+
+<details>
+  <summary>状态栏没有 <code>(.venv)</code>，最可能是哪一步漏了？</summary>
+  <p>第 1 步选解释器。或者当前终端是在选解释器之前就打开的——关掉终端重新开一个（<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>`</kbd>），它会按新配置激活环境。</p>
+</details>
+
+<details>
+  <summary>程序停在红点上，此时那一行代码执行了吗？</summary>
+  <p>没有。断点表示「即将执行这一行」。所以如果断点停在 <code>CALLS += 1</code>，此时看到的 <code>CALLS</code> 还是<b>加之前</b>的值。</p>
+</details>
+
+<details>
+  <summary><kbd>F10</kbd> 和 <kbd>F11</kbd> 的区别，用一句话说清。</summary>
+  <p><kbd>F10</kbd> 把整个函数调用当成一步走完，<kbd>F11</kbd> 钻进函数体内部。想看 <code>fib</code> 里面发生了什么就用 <kbd>F11</kbd>，只想往下推进就用 <kbd>F10</kbd>。</p>
+</details>
+
+<details>
+  <summary>调试时想看一个没写在代码里的表达式，比如 <code>n * 2</code>，在哪敲？</summary>
+  <p>调试控制台，<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Y</kbd>。也可以加到左侧「监视」面板里，每步自动重算。</p>
+</details>
+
+<h2>这一课的胜利，和下一步</h2>
+
+<p>你现在能做的是：<b>让任意一个 Python 脚本停在你指定的任意一行，并读出那里所有变量的值。</b>剩下 90% 的调试工作都是这句话的变体。</p>
+
+<p>接下来按顺序：</p>
+
+<ul>
+  <li><a href="../reference/vscode-python-cheatsheet.html">速查表</a>——快捷键、<code>launch.json</code> 各字段、<code>pdb</code> 命令、报错对照，打印出来贴在手边。</li>
+  <li><a href="../README.md">README</a>——终端那套调试法（<code>pdb</code> 与 <code>debugpy --wait-for-client</code> 附加），以及四道练习。</li>
+  <li>把 <code>n = 5</code> 改成 <code>8</code>，先在终端跑一遍，再用断点单步走一遍。</li>
+</ul>
+
+<div class="note">
+  <span class="label">推荐主源</span>
+  <p><a href="https://code.visualstudio.com/docs/python/debugging">VS Code 官方文档 · Python debugging</a>。本课讲的是它的最小可用子集；遇到本课没覆盖的（条件断点、<code>launch.json</code> 的 <code>args</code>／<code>env</code>、远程调试），直接查这一页，它比任何二手教程都准。</p>
+</div>
+
+</main>
+
+<footer class="inner">
+  <p>哪一步卡住了、或者界面长得跟这里写的不一样，直接回来问我——我是你的老师，不是搜索引擎。</p>
+</footer>
+
+</body>
+</html>
